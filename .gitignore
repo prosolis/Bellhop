@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+bellhop.db
+*.sqlite
+*.sqlite3
