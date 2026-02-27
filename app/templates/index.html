@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bellhop</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --primary: #e94560;
+      --primary-hover: #c73650;
+      --text: #eee;
+      --text-muted: #999;
+      --border: #333;
+      --success: #2ecc71;
+      --error: #e74c3c;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1rem 0; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem;
+    }
+    header h1 { font-size: 1.5rem; letter-spacing: 0.05em; }
+    header h1 span { color: var(--primary); }
+    .btn {
+      padding: 0.5rem 1rem; border: none; border-radius: 6px;
+      cursor: pointer; font-size: 0.9rem; font-weight: 500;
+      transition: background 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-ghost {
+      background: transparent; color: var(--text-muted); border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); }
+    .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+
+    /* Login */
+    .login-card {
+      max-width: 380px; margin: 4rem auto; background: var(--surface);
+      border-radius: 12px; padding: 2rem;
+    }
+    .login-card h2 { margin-bottom: 0.25rem; }
+    .login-card p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .form-group input {
+      width: 100%; padding: 0.6rem 0.75rem; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+      font-size: 0.95rem;
+    }
+    .form-group input:focus { outline: none; border-color: var(--primary); }
+    .error-msg { color: var(--error); font-size: 0.85rem; margin-bottom: 0.75rem; }
+
+    /* Search bar */
+    .search-bar {
+      display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+    }
+    .media-tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; }
+    .media-tab {
+      padding: 0.4rem 1rem; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; cursor: pointer; color: var(--text-muted); font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .media-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .search-input {
+      flex: 1; min-width: 200px; padding: 0.6rem 0.75rem; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.95rem;
+    }
+    .search-input:focus { outline: none; border-color: var(--primary); }
+
+    /* Results grid */
+    .results-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    .result-card {
+      background: var(--surface); border-radius: 10px; overflow: hidden;
+      transition: transform 0.15s;
+    }
+    .result-card:hover { transform: translateY(-2px); }
+    .result-card img {
+      width: 100%; aspect-ratio: 2/3; object-fit: cover; background: var(--surface2);
+    }
+    .result-card .info { padding: 0.75rem; }
+    .result-card .title { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.15rem; }
+    .result-card .year { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .result-card .btn { width: 100%; }
+
+    /* Feedback */
+    .toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      padding: 0.75rem 1.25rem; border-radius: 8px;
+      font-size: 0.9rem; color: #fff; z-index: 100;
+      animation: slideIn 0.3s ease;
+    }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--error); }
+    @keyframes slideIn {
+      from { transform: translateY(1rem); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .spinner { display: inline-block; width: 1em; height: 1em; border: 2px solid #fff3;
+      border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .placeholder {
+      text-align: center; padding: 3rem 1rem; color: var(--text-muted);
+    }
+    .no-poster {
+      width: 100%; aspect-ratio: 2/3; background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" x-data="bellhop()">
+
+    <!-- Toast -->
+    <template x-if="toast.show">
+      <div class="toast" :class="toast.type" x-text="toast.message"
+           x-init="setTimeout(() => toast.show = false, 3000)"></div>
+    </template>
+
+    <!-- Logged-out view -->
+    <template x-if="!user">
+      <div class="login-card">
+        <h2>Bellhop</h2>
+        <p>Sign in with your Matrix account to request media.</p>
+        <div x-show="loginError" class="error-msg" x-text="loginError"></div>
+        <form @submit.prevent="login">
+          <div class="form-group">
+            <label for="username">Matrix username</label>
+            <input id="username" type="text" x-model="loginForm.username"
+                   placeholder="@user:example.com" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input id="password" type="password" x-model="loginForm.password"
+                   required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem"
+                  :disabled="loggingIn">
+            <span x-show="!loggingIn">Sign in</span>
+            <span x-show="loggingIn"><span class="spinner"></span></span>
+          </button>
+        </form>
+      </div>
+    </template>
+
+    <!-- Logged-in view -->
+    <template x-if="user">
+      <div>
+        <header>
+          <h1><span>Bellhop</span></h1>
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <span style="font-size:0.85rem;color:var(--text-muted)" x-text="user"></span>
+            <button class="btn btn-ghost btn-sm" @click="logout">Sign out</button>
+          </div>
+        </header>
+
+        <!-- Media type tabs -->
+        <div class="media-tabs">
+          <template x-for="t in mediaTypes" :key="t.value">
+            <button class="media-tab" :class="mediaType === t.value && 'active'"
+                    @click="mediaType = t.value" x-text="t.label"></button>
+          </template>
+        </div>
+
+        <!-- Search -->
+        <div class="search-bar">
+          <input class="search-input" type="text" x-model="searchTerm"
+                 @keydown.enter="search" placeholder="Search for a title...">
+          <button class="btn btn-primary" @click="search" :disabled="searching">
+            <span x-show="!searching">Search</span>
+            <span x-show="searching"><span class="spinner"></span></span>
+          </button>
+        </div>
+
+        <!-- Results -->
+        <div x-show="results.length > 0" class="results-grid">
+          <template x-for="(item, idx) in results" :key="idx">
+            <div class="result-card">
+              <template x-if="posterUrl(item)">
+                <img :src="posterUrl(item)" :alt="itemTitle(item)" loading="lazy">
+              </template>
+              <template x-if="!posterUrl(item)">
+                <div class="no-poster">No image</div>
+              </template>
+              <div class="info">
+                <div class="title" x-text="itemTitle(item)"></div>
+                <div class="year" x-text="itemSubtitle(item)"></div>
+                <button class="btn btn-primary btn-sm"
+                        @click="requestItem(item)" :disabled="item._requesting">
+                  <span x-show="!item._requesting">Request</span>
+                  <span x-show="item._requesting"><span class="spinner"></span></span>
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div x-show="searched && results.length === 0" class="placeholder">
+          No results found. Try a different search.
+        </div>
+        <div x-show="!searched && results.length === 0" class="placeholder">
+          Select a media type and search for something to request.
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <script>
+    function bellhop() {
+      return {
+        user: null,
+        loginForm: { username: '', password: '' },
+        loginError: '',
+        loggingIn: false,
+        mediaType: 'movie',
+        mediaTypes: [
+          { value: 'movie', label: 'Movie' },
+          { value: 'tv', label: 'TV Show' },
+          { value: 'music', label: 'Music' },
+        ],
+        searchTerm: '',
+        results: [],
+        searched: false,
+        searching: false,
+        toast: { show: false, type: 'success', message: '' },
+
+        async init() {
+          try {
+            const res = await fetch('/auth/me');
+            if (res.ok) {
+              const data = await res.json();
+              this.user = data.user_id;
+            }
+          } catch {}
+        },
+
+        async login() {
+          this.loginError = '';
+          this.loggingIn = true;
+          try {
+            const res = await fetch('/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                username: this.loginForm.username,
+                password: this.loginForm.password,
+              }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+              this.user = data.user_id;
+              this.loginForm = { username: '', password: '' };
+            } else {
+              this.loginError = data.error || 'Login failed';
+            }
+          } catch {
+            this.loginError = 'Network error';
+          } finally {
+            this.loggingIn = false;
+          }
+        },
+
+        async logout() {
+          try { await fetch('/auth/logout', { method: 'POST' }); } catch {}
+          this.user = null;
+          this.results = [];
+          this.searched = false;
+        },
+
+        async search() {
+          if (!this.searchTerm.trim()) return;
+          this.searching = true;
+          this.results = [];
+          this.searched = false;
+          try {
+            const res = await fetch(
+              `/search/${this.mediaType}?term=${encodeURIComponent(this.searchTerm)}`
+            );
+            if (res.ok) {
+              this.results = (await res.json()).map(r => ({ ...r, _requesting: false }));
+            } else {
+              const d = await res.json();
+              this.showToast('error', d.error || 'Search failed');
+            }
+          } catch {
+            this.showToast('error', 'Network error');
+          } finally {
+            this.searching = true; // keep spinner briefly
+            this.searched = true;
+            this.searching = false;
+          }
+        },
+
+        async requestItem(item) {
+          item._requesting = true;
+          try {
+            const res = await fetch(`/request/${this.mediaType}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(item),
+            });
+            const data = await res.json();
+            if (res.ok) {
+              this.showToast('success', data.message || 'Requested!');
+            } else {
+              this.showToast('error', data.error || 'Request failed');
+            }
+          } catch {
+            this.showToast('error', 'Network error');
+          } finally {
+            item._requesting = false;
+          }
+        },
+
+        posterUrl(item) {
+          return item.remotePoster || '';
+        },
+
+        itemTitle(item) {
+          return item.title || item.artistName || '—';
+        },
+
+        itemSubtitle(item) {
+          if (item.year) return String(item.year);
+          if (item.foreignArtistId) return item.foreignArtistId;
+          return '';
+        },
+
+        showToast(type, message) {
+          this.toast = { show: true, type, message };
+          setTimeout(() => { this.toast.show = false; }, 3000);
+        },
+      };
+    }
+  </script>
+</body>
+</html>
