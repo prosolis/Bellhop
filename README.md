@@ -114,7 +114,7 @@ Copy the `access_token` from the response.
 
 | Variable | Default | Description |
 |---|---|---|
-| `SESSION_SECRET_KEY` | _(auto-generated)_ | Secret for signing session cookies. Auto-generated at startup if not set. Set this explicitly in production so sessions survive restarts. |
+| `SESSION_SECRET_KEY` | _(auto-generated)_ | Secret for signing session cookies. Auto-generated at startup if not set. A new key is generated on every restart, which invalidates all existing sessions. |
 | `DATABASE_PATH` | `bellhop.db` | Path to the SQLite database file |
 
 ## API Reference
@@ -244,7 +244,7 @@ Bellhop/
 ### Production Recommendations
 
 - Run behind a reverse proxy (nginx, Caddy, Traefik) with TLS termination so the `secure` cookie flag works.
-- Set `SESSION_SECRET_KEY` explicitly so sessions survive process restarts.
+- If you want sessions to persist across restarts, set `SESSION_SECRET_KEY` explicitly. Otherwise, all users are logged out on restart.
 - Restrict network access to your *arr instances — only the Bellhop container needs to reach them.
 - Use a dedicated Matrix bot account for audit logging rather than a personal account.
 
