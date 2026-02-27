@@ -1,4 +1,5 @@
 import os
+import secrets
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -38,5 +39,5 @@ LIDARR_QUALITY_PROFILE_ID: int = int(os.getenv("LIDARR_QUALITY_PROFILE_ID", "1")
 LIDARR_ROOT_FOLDER: str = os.getenv("LIDARR_ROOT_FOLDER", "/music")
 
 # App
-SESSION_SECRET_KEY: str = _require("SESSION_SECRET_KEY")
+SESSION_SECRET_KEY: str = os.getenv("SESSION_SECRET_KEY") or secrets.token_urlsafe(32)
 DATABASE_PATH: str = os.getenv("DATABASE_PATH", "bellhop.db")

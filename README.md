@@ -64,7 +64,6 @@ Create a `.env` file in the project root (or pass variables via Docker `--env-fi
 | Variable | Description |
 |---|---|
 | `MATRIX_HOMESERVER_URL` | Base URL of your Matrix homeserver (e.g. `https://matrix.example.com`) |
-| `SESSION_SECRET_KEY` | Random secret used internally. Generate one with `python -c "import secrets; print(secrets.token_urlsafe(32))"` |
 
 ### *arr Services
 
@@ -115,6 +114,7 @@ Copy the `access_token` from the response.
 
 | Variable | Default | Description |
 |---|---|---|
+| `SESSION_SECRET_KEY` | _(auto-generated)_ | Secret for signing session cookies. Auto-generated at startup if not set. Set this explicitly in production so sessions survive restarts. |
 | `DATABASE_PATH` | `bellhop.db` | Path to the SQLite database file |
 
 ## API Reference
@@ -244,7 +244,7 @@ Bellhop/
 ### Production Recommendations
 
 - Run behind a reverse proxy (nginx, Caddy, Traefik) with TLS termination so the `secure` cookie flag works.
-- Set `SESSION_SECRET_KEY` to a strong random value.
+- Set `SESSION_SECRET_KEY` explicitly so sessions survive process restarts.
 - Restrict network access to your *arr instances — only the Bellhop container needs to reach them.
 - Use a dedicated Matrix bot account for audit logging rather than a personal account.
 
